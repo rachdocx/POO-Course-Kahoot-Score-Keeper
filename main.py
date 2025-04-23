@@ -3,35 +3,33 @@ import os
 path="pdfs"
 dic={}
 for fisier in os.listdir(path):
-    cale_completa = os.path.join(path, fisier)
-    with pdfplumber.open(cale_completa) as pdf:
+    psf_path = os.path.join(path, fisier)
+    with pdfplumber.open(psf_path) as pdf:
+        print(f"{psf_path} is loaded")
         for pagina in pdf.pages:
-            text = pagina.extract_text()
-            lines = text.splitlines()
-            if(pagina.page_number == 1):
-                for i in range(len(lines)):
-                    if lines[i] == "(points) Answers Answers" :
-                        lines = lines[i+1:]
-                        break
-                for i in range(len(lines)):
-                    user=lines[i].strip().split()
-                    if user[0] != "Page":
-                        if user[1].lower() not in dic:
-                            dic[user[1].lower()]=int(user[2])
-                        else:
-                            dic[user[1].lower()]+=int(user[2])
-            else:
-                for i in range(len(lines)):
-                    if lines[i] == 'Final Scores' :
-                        lines = lines[i+1:]
-                        break
-                for i in range(len(lines)):
-                    user=lines[i].strip().split()
-                    if len(user) >= 3 and user[2].isdigit():
-                        if user[1].lower() not in dic:
-                            dic[user[1].lower()]=int(user[2])
-                        else:
-                            dic[user[1].lower()]+=int(user[2])
+            tabel = pagina.extract_table()
+            if pagina.page_number == 1:
+                tabel = tabel[3:]
+            for rand in tabel:
+                if '\n' in rand[1]:
+                    rand[1] = rand[1].replace('\n', '')
+            if tabel:
+                for rand in tabel:
+                    if rand[1].lower() not in dic:
+                        dic[rand[1].lower()] = int(rand[2])
+                    else:
+                        dic[rand[1].lower()] += int(rand[2])
 dic = dict(sorted(dic.items(), key=lambda x: x[1], reverse=True))
 for index, (cheie, valoare) in enumerate(dic.items()):
     print(f"{index+1}: {cheie} → {valoare}")
+opt = 9;
+while opt != 0:
+    print("1. To search by name")
+    print("0. To exit")
+    opt = int(input())
+    if opt == 1:
+        name = input()
+        for index, (cheie, valoare) in enumerate(dic.items()):
+            if name.lower() == cheie:
+                print(f"{index + 1}: {cheie} → {valoare}")
+                break
