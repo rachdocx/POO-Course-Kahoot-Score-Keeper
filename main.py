@@ -1,5 +1,13 @@
 import pdfplumber
 import os
+import unicodedata
+
+def remove_accents(text):
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', text)
+        if unicodedata.category(c) != 'Mn'
+    )
+
 path="pdfs"
 dic={}
 for fisier in os.listdir(path):
@@ -13,6 +21,14 @@ for fisier in os.listdir(path):
             for rand in tabel:
                 if '\n' in rand[1]:
                     rand[1] = rand[1].replace('\n', '')
+                if ' ' in rand[1]:
+                    rand[1] = rand[1].replace(' ', '')
+                if '_' in rand[1]:
+                    rand[1] = rand[1].replace('_', '')
+                if '-' in rand[1]:
+                    rand[1] = rand[1].replace('-', '')
+                text = remove_accents(rand[1])
+                rand[1] = text
             if tabel:
                 for rand in tabel:
                     if rand[1].lower() not in dic:
